@@ -5,7 +5,7 @@ A solution to accelerate Backend Development for SaaS initiatives
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
+- [Description](#description)
 - [License](#license)
 
 ## Installation
@@ -21,3 +21,27 @@ A solution to accelerate Backend Development for SaaS initiatives
 ## Usage
 
 `python manage.py runserver`
+
+## Description
+
+The goal is to create a backend template to build a saas as fast as possible. We use django in this project. It includes :
+
+- A core app (head of the project)
+- An auth app (google social auth, declaration of a custom user model, creation of new users)
+- A user management app (modify users and accounts, delete accounts, etc...)
+- A support app ('contact us' part, open tickets, user problems management)
+- A billing app (billing part of the saas, manage plans, manage permissions to use services)
+- A service app (the service itself)
+
+The user's connection is ensured by jwt, in core app.
+Here is the custom user model:
+
+`email`
+`unique_id`
+`provider`
+`api_access`
+`is_staff`
+
+## License
+
+Do what you want with it.
