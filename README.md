@@ -15,6 +15,8 @@ A solution to accelerate Backend Development for SaaS initiatives
 - Activate env : `source ./env/bin/activate`
 - Install dependencies : `pip install --upgrade pip && pip install -r requirements.txt`
 - Create .env file and save your keys in it
+- Make migrations with `python manage.py makemigrations`
+- Migrate to your database : `python manage.py migrate`
 
 ## Usage
 
