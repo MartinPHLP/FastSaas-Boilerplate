@@ -29,14 +29,12 @@ def send_mail_to_customer(subject, mail_path, destination):
 
     print(f"Email envoyé à {destination}.")
 
-def send_mail_to_support(subject, content, user_mail, destination=None):
+def send_mail_to_support(subject, content, destination=None):
     email_sender = os.getenv("SUPPORT_EMAIL")
     email_password = os.getenv("SUPPORT_EMAIL_PASSWORD")
 
     if not destination:
         destination = email_sender
-    subject += f" - {user_mail}"
-    content += f"\n\nuser_mail: {user_mail}"
 
     em = EmailMessage()
     em['From'] = email_sender
