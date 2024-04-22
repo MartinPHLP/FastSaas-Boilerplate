@@ -1,5 +1,4 @@
 from .utils.providers import GetGoogleUserInfo
-
 from django.contrib.auth import get_user_model
 from core.utils.jwt import CustomAccessToken
 from rest_framework.response import Response

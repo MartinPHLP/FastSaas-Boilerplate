@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'auth_app',
     'service',
     'support',
+    'users',
 ]
 
 MIDDLEWARE = [
