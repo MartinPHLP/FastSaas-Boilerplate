@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'service',
     'support',
     'users',
+    'billing',
 ]
 
 MIDDLEWARE = [
@@ -38,6 +39,7 @@ MIDDLEWARE = [
 ]
 
 SITE_ID = 1
+SITE_URL = 'http://localhost:3000'
 AUTH_USER_MODEL = 'auth_app.CustomUser'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -78,3 +80,5 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+YOUR_DOMAIN = 'http://localhost:3000'

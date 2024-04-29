@@ -31,7 +31,7 @@ The goal is to create a backend template to build a saas as fast as possible. We
 - A user management app (modify users and accounts, delete accounts, etc...)
 - A support app ('contact us' part, open tickets, user problems management)
 - A billing app (billing part of the saas, manage plans, manage permissions to use services)
-- A service app (the service itself)
+- A service app (the service itself, need to custom it by yourself)
 
 The user's connection is ensured by jwt, in core app.
 Here is the custom user model:
