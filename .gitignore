@@ -8,3 +8,4 @@ env
 localhost.crt
 localhost.key
 infos.txt
+.DS_Store
