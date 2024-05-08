@@ -1,6 +1,8 @@
 # FastSaas Boilerplate
 A solution to accelerate Backend Development for SaaS initiatives
 
+![Illustration](./illustration.jpeg)
+
 ## Table of Contents
 
 - [Installation](#installation)
