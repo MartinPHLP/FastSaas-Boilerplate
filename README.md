@@ -1,7 +1,7 @@
 # FastSaas Boilerplate
 A django solution to accelerate Backend Development for SaaS initiatives
 
-![Illustration](./illustration.jpeg)
+![Illustration](./illustration.jpg)
 
 ## Table of Contents
 
