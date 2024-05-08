@@ -8,7 +8,6 @@ A django solution to accelerate Backend Development for SaaS initiatives
 - [Installation](#installation)
 - [Usage](#usage)
 - [Description](#description)
-- [License](#license)
 
 ## Installation
 
