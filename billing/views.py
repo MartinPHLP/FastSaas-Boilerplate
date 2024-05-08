@@ -4,9 +4,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .utils.token import getAccessToken
 from rest_framework import status
-from .hooks import hooks
+from .utils import token, hooks
 import time
 import json
 import os
@@ -71,7 +70,7 @@ class PayPalWebhookListener(APIView):
         #     'webhook_event': event
         # }
 
-        # access_token = getAccessToken("https://api-m.sandbox.paypal.com/v1/oauth2/token", os.getenv("PAYPAL_CLIENT_ID"), os.getenv("PAYPAL_CLIENT_SECRET"))
+        # access_token = token.getAccessToken("https://api-m.sandbox.paypal.com/v1/oauth2/token", os.getenv("PAYPAL_CLIENT_ID"), os.getenv("PAYPAL_CLIENT_SECRET"))
         # if access_token is None:
         #     print('Failed to get access token')
         #     return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -101,5 +100,6 @@ class PayPalWebhookListener(APIView):
                 handler(event)
             return Response(status=status.HTTP_200_OK)
 
-        except:
+        except Exception as e:
+            print('Error handling event: ', e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
