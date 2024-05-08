@@ -23,6 +23,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=120, unique=True)
     unique_id = models.CharField(max_length=255, unique=True)
+    sub_id = models.CharField(max_length=255, blank=True, null=True)
     provider = models.CharField(max_length=10)
     api_access = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)

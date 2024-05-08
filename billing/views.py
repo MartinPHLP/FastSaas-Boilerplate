@@ -1,106 +1,105 @@
-from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import get_authorization_header
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from .utils.token import getAccessToken
 from rest_framework import status
-from django.shortcuts import redirect
-from django.conf import settings
-import stripe
+from .hooks import hooks
+import time
+import json
 import os
 
-# Configurez votre clé d'API Stripe ici.
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+User = get_user_model()
 
-class CreateCheckoutSession(APIView):
-    """
-    Cette vue est responsable de créer une session de paiement Stripe.
-    """
-    def post(self, request):
+class PostSubId(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, *args, **kwargs):
         try:
-            # Récupère les données de la requête
-            lookup_key = request.data.get('lookup_key')
+            auth = get_authorization_header(request).split()
+            if not auth or auth[0].lower() != b'bearer':
+                return Response({'detail': 'Missing JWT'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Récupère le prix correspondant au lookup_key
-            prices = stripe.Price.list(
-                lookup_keys=[lookup_key],
-                expand=['data.product']
-            )
+            access_token = auth[1].decode('utf-8')
+            decoded_token = AccessToken(access_token)
 
-            # Crée une session de paiement Stripe
-            checkout_session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        'price': prices.data[0].id,
-                        'quantity': 1,
-                    },
-                ],
-                mode='subscription',
-                success_url=f"{settings.YOUR_DOMAIN}?success=true&session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{settings.YOUR_DOMAIN}?canceled=true",
-            )
+            unique_id = decoded_token['unique_id']
+            sub_id = request.data.get('sub_id')
 
-            # Redirige l'utilisateur vers la session de paiement Stripe
-            return redirect(checkout_session.url, code=303)
+            user = User.objects.get(unique_id=unique_id)
+            user.sub_id = sub_id
+            user.save()
+
+            return Response({'detail': 'Subscription ID saved'}, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            # Gère les erreurs
-            print(e)
-            return Response({"error": "Erreur lors de la création de la session de paiement"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class CustomerPortal(APIView):
-    """
-    Cette vue est responsable de créer une session de portail client pour gérer les abonnements.
-    """
-    def post(self, request):
-        # Récupère l'ID de la session de paiement depuis la requête
-        checkout_session_id = request.data.get('session_id')
+class PayPalWebhookListener(APIView):
+    event_handlers = {
+        # 'BILLING.SUBSCRIPTION.CREATED': hooks.handle_subscription_created,
+        'BILLING.SUBSCRIPTION.ACTIVATED': hooks.handle_subscription_activated,
+        # 'PAYMENT.SALE.COMPLETED': hooks.handle_payment_completed,
+        # 'BILLING.SUBSCRIPTION.PAYMENT.FAILED': hooks.handle_payment_failed,
+        'BILLING.SUBSCRIPTION.SUSPENDED': hooks.handle_subscription_suspended,
+        'BILLING.SUBSCRIPTION.CANCELLED': hooks.handle_subscription_cancelled,
+    }
 
-        # Récupère la session de paiement Stripe
-        checkout_session = stripe.checkout.Session.retrieve(checkout_session_id)
+    def post(self, request, *args, **kwargs):
+        body = request.data
+        event = body
 
-        # Crée une session de portail client pour gérer l'abonnement
-        portal_session = stripe.billing_portal.Session.create(
-            customer=checkout_session.customer,
-            return_url=settings.YOUR_DOMAIN,
-        )
+        # headers = {
+        #     'PAYPAL-TRANSMISSION-ID': request.headers.get('PAYPAL-TRANSMISSION-ID'),
+        #     'PAYPAL-TRANSMISSION-TIME': request.headers.get('PAYPAL-TRANSMISSION-TIME'),
+        #     'PAYPAL-TRANSMISSION-SIG': request.headers.get('PAYPAL-TRANSMISSION-SIG'),
+        #     'PAYPAL-AUTH-ALGO': request.headers.get('PAYPAL-AUTH-ALGO'),
+        #     'PAYPAL-CERT-URL': request.headers.get('PAYPAL-CERT-URL')
+        # }
 
-        # Redirige l'utilisateur vers la session de portail client
-        return redirect(portal_session.url, code=303)
+        # verify_payload = {
+        #     'transmission_id': headers['PAYPAL-TRANSMISSION-ID'],
+        #     'transmission_time': headers['PAYPAL-TRANSMISSION-TIME'],
+        #     'cert_url': headers['PAYPAL-CERT-URL'],
+        #     'auth_algo': headers['PAYPAL-AUTH-ALGO'],
+        #     'transmission_sig': headers['PAYPAL-TRANSMISSION-SIG'],
+        #     'webhook_id': os.getenv("WEBHOOK_ID"),
+        #     'webhook_event': event
+        # }
 
-class WebhookReceived(APIView):
-    """
-    Cette vue est responsable de gérer les événements webhook Stripe.
-    """
-    def post(self, request):
-        # Remplacez par votre secret de webhook unique
-        webhook_secret = 'whsec_12345'
+        # access_token = getAccessToken("https://api-m.sandbox.paypal.com/v1/oauth2/token", os.getenv("PAYPAL_CLIENT_ID"), os.getenv("PAYPAL_CLIENT_SECRET"))
+        # if access_token is None:
+        #     print('Failed to get access token')
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        request_data = request.body
+        # verify_headers = {
+        #     'Content-Type': 'application/json',
+        #     'Authorization': f'Bearer {access_token}'
+        # }
 
-        try:
-            # Vérifie la signature du webhook
-            signature = request.headers.get('stripe-signature')
-            event = stripe.Webhook.construct_event(
-                payload=request_data, sig_header=signature, secret=webhook_secret)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        # print("Verifying webhook signature...")
+        # time.sleep(5)
+        # response = requests.post("https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature", json=verify_payload, headers=verify_headers)
 
-        # Obtenez les données de l'événement et le type d'événement
-        data = event['data']
-        event_type = event['type']
-        data_object = data['object']
+        # if response.status_code == 200:
+            # verification_result = response.json()
+            # verification_status = verification_result.get('verification_status')
+            # print('Verification status:', verification_status)
 
-        print(f'Event: {event_type}')
+            # if verification_status == 'SUCCESS':
+                # print('Verification successful')
 
-        # Traite les événements spécifiques
-        if event_type == 'checkout.session.completed':
-            print('🔔 Paiement réussi !')
-        elif event_type == 'customer.subscription.trial_will_end':
-            print('La période d\'essai de l\'abonnement va se terminer')
-        elif event_type == 'customer.subscription.created':
-            print(f'Abonnement créé : {event.id}')
-        elif event_type == 'customer.subscription.updated':
-            print(f'Abonnement mis à jour : {event.id}')
-        elif event_type == 'customer.subscription.deleted':
-            # Gérez l'annulation de l'abonnement ici.
-            print(f'Abonnement annulé : {event.id}')
+        try :
+            event_type = event['event_type']
+            handler = self.event_handlers.get(event_type)
 
-        # Répond avec un statut de succès
-        return Response({'status': 'success'})
+            if handler:
+                handler(event)
+            return Response(status=status.HTTP_200_OK)
+
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

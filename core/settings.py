@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production & keep the secret key used in production secret!
 SECRET_KEY = os.getenv('BACKEND_SECRET_KEY')
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', "e721-93-10-32-43.ngrok-free.app"]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'sslserver',
     'auth_app',
     'service',
     'support',
@@ -82,3 +83,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 YOUR_DOMAIN = 'http://localhost:3000'
+

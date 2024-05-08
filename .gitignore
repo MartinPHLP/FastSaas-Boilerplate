@@ -3,5 +3,8 @@
 **/*__pycache__
 
 .env
-
 env
+
+localhost.crt
+localhost.key
+infos.txt
