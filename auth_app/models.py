@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 class CustomUserManager(BaseUserManager):
@@ -18,15 +18,17 @@ class CustomUserManager(BaseUserManager):
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
         return self.create_user(email, unique_id, provider, password, **extra_fields)
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(max_length=120, unique=True)
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)  # Assurez-vous que le champ email est unique
     unique_id = models.CharField(max_length=255, unique=True)
     sub_id = models.CharField(max_length=255, blank=True, null=True)
+    photo_url = models.CharField(max_length=255, blank=True, null=True)
     provider = models.CharField(max_length=10)
     api_access = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['unique_id', 'provider']

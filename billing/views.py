@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .utils import token, hooks
+from billing.utils import token, hooks
 import time
 import json
 import os
@@ -52,6 +52,7 @@ class PayPalWebhookListener(APIView):
         body = request.data
         event = body
 
+        # REMOVE COMMENTS TO ENABLE PAYPAL WEBHOOK SIGNATURE VERIFICATION
         # headers = {
         #     'PAYPAL-TRANSMISSION-ID': request.headers.get('PAYPAL-TRANSMISSION-ID'),
         #     'PAYPAL-TRANSMISSION-TIME': request.headers.get('PAYPAL-TRANSMISSION-TIME'),

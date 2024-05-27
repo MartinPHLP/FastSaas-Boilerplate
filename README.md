@@ -35,11 +35,11 @@ The goal is to create a backend template to build a saas as fast as possible. We
 - A service app (the service itself, need to custom it by yourself)
 
 The user's connection is ensured by jwt, in core app.
-Here is the custom user model:
+Here is the custom user fileds':
 
-`email`
 `unique_id`
 `provider`
 `api_access`
-`is_staff`
 `sub_id`
+`photo_url`
+
